@@ -38,37 +38,14 @@ with tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".bin") as fd:
 
 try:
     qemu_cmd = f"qemu-system-arm -M mps3-an524 -cpu cortex-m33 -nographic -semihosting -kernel {binpath} -device loader,file={args_file},addr=0x{cmdline_offset:x}".split()
-    result = subprocess.run(qemu_cmd, capture_output=True, text=True, timeout=300)
-
-except subprocess.TimeoutExpired:
-    err("FAIL!")
-    err("Test timed out after 300 seconds")
-    exit(1)
+    result = subprocess.run(qemu_cmd, encoding="utf-8", capture_output=True)
 finally:
     os.unlink(args_file)
-
-# AArch32 semihosting exit code behavior:
-# - Exit code 0 is reserved for specific conditions that don't apply to bare-metal programs
-# - Exit code 1 indicates the VM terminated via semihosting (not an error)
-# We check stderr for actual QEMU errors instead.
-has_error = False
-if result.returncode != 0 and result.stderr:
-    stderr_lower = result.stderr.lower()
-    if any(
-        keyword in stderr_lower
-        for keyword in ["qemu:", "error:", "fatal:", "failed to"]
-    ):
-        has_error = True
-
-if has_error:
+if result.returncode != 0:
     err("FAIL!")
     err(f"{qemu_cmd} failed with error code {result.returncode}")
     err(result.stderr)
     exit(1)
 
 for line in result.stdout.splitlines():
-    print(line)
-
-# Semihosting output goes to stderr
-for line in result.stderr.splitlines():
     print(line)
