@@ -138,10 +138,19 @@ def run_keyGen_test(tg, tc):
         err(f"{acvp_call} failed with error code {result.returncode}")
         err(result.stderr)
         exit(1)
+    # Debug: print first test case output
+    if tc['tcId'] == 1:
+        err(f"DEBUG stdout: {repr(result.stdout[:200])}")
+        err(f"DEBUG stderr: {repr(result.stderr[:200])}")
     # Extract results
     for l in result.stdout.splitlines():
-        (k, v) = l.split("=")
+        if "=" not in l:
+            continue
+        (k, v) = l.split("=", 1)
         results[k] = v
+    # Debug: print what we extracted for first test
+    if tc['tcId'] == 1:
+        err(f"DEBUG results: {results}")
     info("done")
     return results
 
@@ -260,7 +269,9 @@ def run_sigGen_test(tg, tc):
         exit(1)
     # Extract results
     for l in result.stdout.splitlines():
-        (k, v) = l.split("=")
+        if "=" not in l:
+            continue
+        (k, v) = l.split("=", 1)
         results[k] = v
     info("done")
     return results
