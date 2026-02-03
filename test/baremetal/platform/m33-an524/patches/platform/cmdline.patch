@@ -10,3 +10,13 @@
  
  typedef struct cmdline_s
  {
+@@ -12,7 +12,8 @@ typedef struct cmdline_s
+   char *argv[];
+ } cmdline_t;
+ 
+-#define CMDLINE_ADDR ((cmdline_t *)0x70000)
++/* M33-AN524: After heap (~0x20000b20), before stack (0x20008000) */
++#define CMDLINE_ADDR ((cmdline_t *)0x20007000)
+ 
+ /* Provide a prototype for the real main that the C library expects. */
+ extern int __real_main(int argc, char *argv[]);
